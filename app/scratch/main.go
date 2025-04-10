@@ -141,3 +141,9 @@ func run() error {
 
 // if the signature ends with zer (0), it is basically saying when using the signature use the first value
 // if the signature ends with one (1) it is basically saying when using the signature use the second value
+
+
+// So we need to salt our data
+// and we also need to customize the signature to align with the chain
+
+// Using the ECDSA Algorithm we can get the addres of the sender from the signature, that way we are able to determine who is executing the txn
