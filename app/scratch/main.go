@@ -147,5 +147,5 @@ func run() error {
 
 // Using the ECDSA Algorithm we can get the addres of the sender from the signature, that way we are able to determine who is executing the txn
 
-// we maintain the account balances and the nonce number, the nonce number would represent the transaction number
+// the ethereum mainnet maintain the account balances and the nonce number, the nonce number would represent the total transaction number from an address (starting from zero)
 // nonce value represent the number of transaction that have been sent frpm a particular address
