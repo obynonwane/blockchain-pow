@@ -39,10 +39,10 @@ func run() error {
 		return fmt.Errorf("unable to marshal: %w", err)
 	}
 
-	// salt the signature such that I am able to determine which, chain It is meant for
+	// salt the transaction data such that I am able to determine which chain It is coming from
 	stamp := []byte(fmt.Sprintf("\x19Ardan Signed Message:\n%d", len(data)))
 
-	// get a 32 bytes hash of the byte slice of data above and also concatenat the stamp
+	// get a 32 bytes hash of the byte slice of data above and also concatenat the stamp or salt
 	// keccak256 is a variadic function
 	v := crypto.Keccak256(stamp, data)
 
@@ -79,8 +79,9 @@ func run() error {
 		return fmt.Errorf("unable to marshal: %w", err)
 	}
 
+	stamp = []byte(fmt.Sprintf("\x19Ardan Signed Message:\n%d", len(data)))
 	// get a 32 bytes hash of the byte slice of data above
-	v2 := crypto.Keccak256(data)
+	v2 := crypto.Keccak256(stamp, data)
 
 	sig2, err := crypto.Sign(v2, privateKey)
 	if err != nil {
@@ -104,8 +105,9 @@ func run() error {
 		return fmt.Errorf("unable to marshal: %w", err)
 	}
 
+	stamp = []byte(fmt.Sprintf("\x19Ardan Signed Message:\n%d", len(data)))
 	// get a 32 bytes hash of the data slice
-	v2 = crypto.Keccak256(data)
+	v2 = crypto.Keccak256(stamp, data)
 
 	// returns the public key from the signature - using the ECDSA
 	publicKey, err = crypto.SigToPub(v2, sig2)
