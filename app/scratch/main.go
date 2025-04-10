@@ -39,8 +39,12 @@ func run() error {
 		return fmt.Errorf("unable to marshal: %w", err)
 	}
 
-	// get a 32 bytes hash of the byte slice of data above
-	v := crypto.Keccak256(data)
+	// salt the signature such that I am able to determine which, chain It is meant for
+	stamp := []byte(fmt.Sprintf("\x19Ardan Signed Message:\n%d", len(data)))
+
+	// get a 32 bytes hash of the byte slice of data above and also concatenat the stamp
+	// keccak256 is a variadic function
+	v := crypto.Keccak256(stamp, data)
 
 	sig, err := crypto.Sign(v, privateKey)
 	if err != nil {
