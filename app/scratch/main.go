@@ -125,6 +125,7 @@ func run() error {
 // 1. You can check if the signature is properly structured - since you dont have the private key
 
 //===================Structure of the signature================================
+// there is nothing one can do with a signature other than to verify if it is structured properly
 // It comes in three (3) parts
 // 1. R value (second 32 byte is the second point on the elliptic curve(called secp256k1) )
 // 2. S value (first 32 byte is fist point on the elliptic curve(called secp256k1) )
