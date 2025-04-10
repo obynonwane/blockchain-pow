@@ -126,8 +126,11 @@ func run() error {
 
 //===================Structure of the signature================================
 // It comes in three (3) parts
-// 1. R value (second 32 byte is a point on the elliptic curve(called secp256k1) )
-// 2. S value (first 32 byte is a point on the elliptic curve(called secp256k1) )
+// 1. R value (second 32 byte is the second point on the elliptic curve(called secp256k1) )
+// 2. S value (first 32 byte is fist point on the elliptic curve(called secp256k1) )
 // 3. V value
 // The ECDSA algorithm need only one of the R or S value to work, ethreum added the third Value V which is either 0 or 1
 // so the V tells whether to use the first value of or the second value
+
+// if the signature ends with zer (0), it is basically saying when using the signature use the first value
+// if the signature ends with one (1) it is basically saying when using the signature use the second value
