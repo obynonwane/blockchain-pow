@@ -149,3 +149,6 @@ func run() error {
 
 // the ethereum mainnet maintain the account balances and the nonce number, the nonce number would represent the total transaction number from an address (starting from zero)
 // nonce value represent the number of transaction that have been sent frpm a particular address
+
+//READUP
+// - TRANSACTION TYPES IN ETHEREUM
