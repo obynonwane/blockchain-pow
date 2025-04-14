@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -121,6 +123,21 @@ func run() error {
 	return nil
 }
 
+// ToVRSFromHexSignature converts a hex representation of the signature into
+// its R, S and V parts.
+func ToVRSFromHexSignature(sigStr string) (v, r, s *big.Int, err error) {
+	sig, err := hex.DecodeString(sigStr[2:])
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	r = big.NewInt(0).SetBytes(sig[:32])
+	s = big.NewInt(0).SetBytes(sig[32:64])
+	v = big.NewInt(0).SetBytes([]byte{sig[64]})
+
+	return v, r, s, nil
+}
+
 // Get the data
 // get the byte slice
 // get the 32byte hash of the byte slice (using keccak or sha256)
@@ -133,9 +150,9 @@ func run() error {
 //===================Structure of the signature================================
 // there is nothing one can do with a signature other than to verify if it is structured properly
 // It comes in three (3) parts
-// 1. R value (second 32 byte is the second point on the elliptic curve(called secp256k1) )
-// 2. S value (first 32 byte is fist point on the elliptic curve(called secp256k1) )
-// 3. V value
+// 1. R value (second 32 byte is the second point on the elliptic curve(called secp256k1) ) - x codinate
+// 2. S value (first 32 byte is fist point on the elliptic curve(called secp256k1) ) - signature proof
+// 3. V value (1 byte) [v = recoveryID + 35 + (2 * chainId)] recoveryID can be either 1 or 0
 // The ECDSA algorithm need only one of the R or S value to work, ethreum added the third Value V which is either 0 or 1
 // so the V tells whether to use the first value of or the second value
 
