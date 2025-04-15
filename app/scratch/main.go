@@ -120,6 +120,12 @@ func run() error {
 	// return the ethereum common address := maybe by returning the first twenty bytes
 	fmt.Println("PUB", crypto.PubkeyToAddress(*publicKey).String())
 
+	vv, r, s, err := ToVRSFromHexSignature(hexutil.Encode(sig2))
+	if err != nil {
+		return fmt.Errorf("unable to VRS: %w", err)
+	}
+	fmt.Println("V|R|S", vv, r, s)
+
 	return nil
 }
 
