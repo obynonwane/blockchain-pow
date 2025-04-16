@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -109,6 +110,20 @@ func ToSignatureBytes(v, r, s *big.Int) []byte {
 	return sig
 }
 
+// SignatureString returns the signature as a string.
+func SignatureString(v, r, s *big.Int) string {
+	return hexutil.Encode(ToSignatureBytesWithArdanID(v, r, s))
+}
+
+// ToSignatureBytesWithArdanID converts the r, s, v values into a slice of bytes
+// keeping the Ardan id.
+func ToSignatureBytesWithArdanID(v, r, s *big.Int) []byte {
+	sig := ToSignatureBytes(v, r, s)
+	sig[64] = byte(v.Uint64())
+
+	return sig
+}
+
 // stamp returns a hash of 32 bytes that represents this data with
 // the Ardan stamp embedded into the final hash.
 func stamp(value any) ([]byte, error) {
@@ -143,7 +158,6 @@ func toSignatureValues(sig []byte) (v, r, s *big.Int) {
 // send data and private key for signing
 // 1. Stamp the data
 // 2. Sign the stamped data with private key - returning signature
-
 
 //--------------------------------------WHAT THE NODES DO ON RECEIVING TXNS---------------------------------//
 // 1. Receive transaction - Execute Validate func
