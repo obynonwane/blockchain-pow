@@ -24,7 +24,7 @@ const ardanID = 29
 
 // Hash returns a unique string for the value.
 func Hash(value any) string {
-	// get a slice of bytes
+	// get a slice of bytes using json.Marshal
 	data, err := json.Marshal(value)
 	if err != nil {
 		return ZeroHash
