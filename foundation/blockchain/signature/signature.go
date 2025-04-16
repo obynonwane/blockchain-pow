@@ -51,7 +51,63 @@ func Sign(value any, privateKey *ecdsa.PrivateKey) (v, r, s *big.Int, err error)
 
 }
 
+// VerifySignature verifies the signature conforms to our standards.
+func VerifySignature(v, r, s *big.Int) error {
+
+	// Check the recovery id is either 0 or 1.
+	uintV := v.Uint64() - ardanID
+	if uintV != 0 && uintV != 1 {
+		return errors.New("invalid recovery id")
+	}
+
+	// Check the signature values are valid.
+	if !crypto.ValidateSignatureValues(byte(uintV), r, s, false) {
+		return errors.New("invalid signature values")
+	}
+
+	return nil
+}
+
+// FromAddress extracts the address for the account that signed the data.
+func FromAddress(value any, v, r, s *big.Int) (string, error) {
+
+	// Prepare the data for public key extraction.
+	data, err := stamp(value)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert the [R|S|V] format into the original 65 bytes.
+	sig := ToSignatureBytes(v, r, s)
+
+	// Capture the public key associated with this data and signature.
+	publicKey, err := crypto.SigToPub(data, sig)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract the account address from the public key.
+	return crypto.PubkeyToAddress(*publicKey).String(), nil
+}
+
 // =============================================================================
+// ToSignatureBytes converts the r, s, v values into a slice of bytes
+// with the removal of the ardanID.
+func ToSignatureBytes(v, r, s *big.Int) []byte {
+	sig := make([]byte, crypto.SignatureLength)
+
+	rBytes := make([]byte, 32)
+	r.FillBytes(rBytes)
+	copy(sig, rBytes)
+
+	sBytes := make([]byte, 32)
+	s.FillBytes(sBytes)
+	copy(sig[32:], sBytes)
+
+	sig[64] = byte(v.Uint64() - ardanID)
+
+	return sig
+}
 
 // stamp returns a hash of 32 bytes that represents this data with
 // the Ardan stamp embedded into the final hash.
@@ -87,3 +143,15 @@ func toSignatureValues(sig []byte) (v, r, s *big.Int) {
 // send data and private key for signing
 // 1. Stamp the data
 // 2. Sign the stamped data with private key - returning signature
+
+
+//--------------------------------------WHAT THE NODES DO ON RECEIVING TXNS---------------------------------//
+// 1. Receive transaction - Execute Validate func
+// 2. Verify the payload - validation e.g
+// - chainID,
+// - fromAddress, - i.e extract it address (check properly formatted)
+// - ToAddress, - (check properly formatted)
+// - Verify Signature, - i.e check structure, extract the pub key & address
+// - ensure from address and extracted address from signature matches
+// - also check from & to address are not same
+// 3.
