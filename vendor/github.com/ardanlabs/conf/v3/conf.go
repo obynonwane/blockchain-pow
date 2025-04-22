@@ -3,6 +3,7 @@ package conf
 import (
 	"errors"
 	"fmt"
+
 	"net/url"
 	"os"
 	"reflect"
@@ -31,6 +32,7 @@ type Parsers interface {
 // command line argument overrides to the struct. ErrHelpWanted is
 // returned when the --help or --version are detected.
 func Parse(prefix string, cfg interface{}, parsers ...Parsers) (string, error) {
+
 	var args []string
 	if len(os.Args) > 1 {
 		args = os.Args[1:]
