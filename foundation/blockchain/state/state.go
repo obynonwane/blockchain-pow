@@ -11,14 +11,14 @@ import (
 
 // EventHandler defines a function that is called when events
 // occur in the processing of persisting blocks.
-type EventHandler func(v string, args ...any)
+type EventHandler func(v string, args ...any) // represent a function that we can call if we want to log
 
 // Config represents the configuration required to start
 // the blockchain node.
 type Config struct {
 	BeneficiaryID database.AccountID // receiver of mining reward/gas fee for this node
 	Genesis       genesis.Genesis
-	EvHandler     EventHandler
+	EvHandler     EventHandler // logging
 }
 
 // State manages the blockchain database.

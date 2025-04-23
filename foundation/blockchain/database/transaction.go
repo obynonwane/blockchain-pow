@@ -125,7 +125,7 @@ func (tx SignedTx) String() string {
 }
 
 // =============================================================================
-
+// This is a transaction that will be included in the block
 // BlockTx represents the transaction as it's recorded inside a block. This
 // includes a timestamp and gas fees.
 type BlockTx struct {
