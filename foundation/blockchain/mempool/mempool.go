@@ -86,6 +86,39 @@ func (mp *Mempool) Delete(tx database.BlockTx) error {
 	return nil
 }
 
+// PickBest uses the configured sort strategy to return a set of transactions.
+// If 0 is passed, all transactions in the mempool will be returned.
+func (mp *Mempool) PickBest(howMany ...uint16) []database.BlockTx {
+	number := 0
+	if len(howMany) > 0 {
+		number = int(howMany[0])
+	}
+
+	// CORE NOTE: Most blockchains do set a max block size limit and this size
+	// will determined which transactions are selected. When picking the best
+	// transactions for the next block, the Ardan blockchain is currently not
+	// focused on block size but a max number of transactions.
+	//
+	// When the selection algorithm does need to consider sizing, picking the
+	// right transactions that maximize profit gets really hard. On top of this,
+	// today a miner gets a mining reward for each mined block. In the future
+	// this could go away leaving just fees for the transactions that are
+	// selected as the only form of revenue. This will change how transactions
+	// need to be selected.
+
+	// copy all the transactions for each account into a separate slices.
+	m := make(map[database.AccountID][]database.BlockTx)
+	mp.mu.RLock()
+	{
+		if number == 0 {
+			number = len(mp.pool)
+		}
+		for key, tx := range mp.pool {
+			
+		}
+	}
+}
+
 // Truncate clears all the transaction from the pool
 func (mp *Mempool) Truncate() {
 	mp.mu.Lock()
