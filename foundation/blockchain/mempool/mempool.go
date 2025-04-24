@@ -14,7 +14,7 @@ import (
 // Mempool represents a cache of transactions organised by account:nonce
 type Mempool struct {
 	mu   sync.RWMutex
-	pool map[string]database.BlockTx
+	pool map[string]database.BlockTx // string here which is the key is the concate of from addresss and nonce
 }
 
 // New constructs a new mempool using the default sort strategy
@@ -63,6 +63,26 @@ func (mp *Mempool) Upsert(tx database.BlockTx) error {
 			return errors.New("replacing a transaction requires a 10% bump in the tip")
 		}
 	}
+
+	// update the tx in the mempool
+	// the key is the concate with (:) of from address and nonce
+	mp.pool[key] = tx
+	return nil
+}
+
+// Delete removed a transaction from the mempool
+func (mp *Mempool) Delete(tx database.BlockTx) error {
+	mp.mu.Lock()
+	defer mp.mu.Unlock()
+
+	key, err := mapKey(tx)
+	if err != nil {
+		return err
+	}
+
+	// delete item from the pool
+	delete(mp.pool, key)
+
 	return nil
 }
 
