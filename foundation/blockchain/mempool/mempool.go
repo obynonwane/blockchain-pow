@@ -86,6 +86,14 @@ func (mp *Mempool) Delete(tx database.BlockTx) error {
 	return nil
 }
 
+// Truncate clears all the transaction from the pool
+func (mp *Mempool) Truncate() {
+	mp.mu.Lock()
+	defer mp.mu.Unlock()
+
+	mp.pool = make(map[string]database.BlockTx)
+}
+
 // ========================================================================================
 
 // mapKey is used to generate the map key.
