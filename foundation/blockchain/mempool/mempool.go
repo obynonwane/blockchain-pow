@@ -2,7 +2,9 @@
 package mempool
 
 import (
+	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 
@@ -53,6 +55,14 @@ func (mp *Mempool) Upsert(tx database.BlockTx) error {
 		return err
 	}
 
+	// Ethereum requires a 10% bump in the tip to replace an existing
+	// transaction in the mempool and so do we. We want to limit users
+	// from this sort of behavior.
+	if etx, exists := mp.pool[key]; exists {
+		if tx.Tip < uint64(math.Round(float64(etx.Tip)*1.10)) {
+			return errors.New("replacing a transaction requires a 10% bump in the tip")
+		}
+	}
 	return nil
 }
 
