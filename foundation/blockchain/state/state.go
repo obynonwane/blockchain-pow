@@ -7,6 +7,7 @@ import (
 
 	"github.com/ardanlabs/blockchain/foundation/blockchain/database"
 	"github.com/ardanlabs/blockchain/foundation/blockchain/genesis"
+	"github.com/ardanlabs/blockchain/foundation/blockchain/mempool"
 )
 
 // EventHandler defines a function that is called when events
@@ -16,9 +17,10 @@ type EventHandler func(v string, args ...any) // represent a function that we ca
 // Config represents the configuration required to start
 // the blockchain node.
 type Config struct {
-	BeneficiaryID database.AccountID // receiver of mining reward/gas fee for this node
-	Genesis       genesis.Genesis
-	EvHandler     EventHandler // logging
+	BeneficiaryID  database.AccountID // receiver of mining reward/gas fee for this node
+	Genesis        genesis.Genesis
+	SelectStrategy string
+	EvHandler      EventHandler // logging
 }
 
 // State manages the blockchain database.
@@ -29,6 +31,7 @@ type State struct {
 	evHandler     EventHandler
 
 	genesis genesis.Genesis
+	mempool *mempool.Mempool
 	db      *database.Database
 }
 
@@ -48,6 +51,12 @@ func New(cfg Config) (*State, error) {
 		return nil, err
 	}
 
+	// construct mempool with the specified sort strategy
+	mempool, err := mempool.NewWithStrategy(cfg.SelectStrategy)
+	if err != nil {
+		return nil, err
+	}
+
 	// Create the State to provide support for managing the blockchain.
 	state := State{
 		beneficiaryID: cfg.BeneficiaryID,
@@ -55,8 +64,8 @@ func New(cfg Config) (*State, error) {
 		evHandler: ev,
 
 		genesis: cfg.Genesis,
-
-		db: db,
+		mempool: mempool,
+		db:      db,
 	}
 
 	return &state, nil
@@ -69,4 +78,19 @@ func (s *State) Shutdown() error {
 	defer s.evHandler("state: shutdown: completed")
 
 	return nil
+}
+
+// MempoolLength returns the current length of the mempool
+func (s *State) MempoolLength() int {
+	return s.mempool.Count()
+}
+
+// Mempool returns a copy of the mempool
+func (s *State) Mempool() []database.BlockTx {
+	return s.mempool.PickBest()
+}
+
+// UpsertMempool adds a new transaction to the mempool
+func (s *State) UpsertMempool(tx database.BlockTx) error {
+	return s.mempool.Upsert(tx)
 }
