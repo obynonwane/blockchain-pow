@@ -54,6 +54,11 @@ func (bn byNonce) Less(i, j int) bool {
 	return bn[i].Nonce < bn[j].Nonce
 }
 
+// Swap moves transactions in the order of the nonce value.
+func (bn byNonce) Swap(i, j int) {
+	bn[i], bn[j] = bn[j], bn[i]
+}
+
 // ==================================================================================
 
 // byTip provides sorting support by the transaction tip value
