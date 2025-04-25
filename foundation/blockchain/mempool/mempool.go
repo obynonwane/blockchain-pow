@@ -9,23 +9,30 @@ import (
 	"sync"
 
 	"github.com/ardanlabs/blockchain/foundation/blockchain/database"
+	"github.com/ardanlabs/blockchain/foundation/blockchain/mempool/selector"
 )
 
 // Mempool represents a cache of transactions organised by account:nonce
 type Mempool struct {
-	mu   sync.RWMutex
-	pool map[string]database.BlockTx // string here which is the key is the concate of from addresss and nonce
+	mu       sync.RWMutex
+	pool     map[string]database.BlockTx // string here which is the key is the concate of from addresss and nonce
+	selectFn selector.Func
 }
 
 // New constructs a new mempool using the default sort strategy
 func New() (*Mempool, error) {
-	return NewWithStrategy()
+	return NewWithStrategy(selector.StrategyTip)
 }
 
 // NewWithStrategy constructs a new mempool with specified sort strategy
-func NewWithStrategy() (*Mempool, error) {
+func NewWithStrategy(strategy string) (*Mempool, error) {
+	selectFn, err := selector.Retrieve(strategy)
+	if err != nil {
+		return nil, err
+	}
 	mp := Mempool{
-		pool: make(map[string]database.BlockTx),
+		pool:     make(map[string]database.BlockTx),
+		selectFn: selectFn,
 	}
 	return &mp, nil
 }
@@ -107,16 +114,25 @@ func (mp *Mempool) PickBest(howMany ...uint16) []database.BlockTx {
 	// need to be selected.
 
 	// copy all the transactions for each account into a separate slices.
-	m := make(map[database.AccountID][]database.BlockTx)
+	m := make(map[database.AccountID][]database.BlockTx) // map where value are slices
 	mp.mu.RLock()
 	{
 		if number == 0 {
 			number = len(mp.pool)
 		}
+		// loop through the mempool and select transaction
+		// and append it to m slice
 		for key, tx := range mp.pool {
-			
+			account := accountFromMapKey(key)
+			m[account] = append(m[account], tx)
 		}
 	}
+	mp.mu.RUnlock()
+
+	//The selection algorithms is expecting this slice of transactions
+	// organised by account
+	return mp.selectFn(m, number)
+
 }
 
 // Truncate clears all the transaction from the pool
@@ -136,6 +152,6 @@ func mapKey(tx database.BlockTx) (string, error) {
 
 // accountFromMapKey extracts the account information from the mapKey
 func accountFromMapKey(key string) database.AccountID {
-	// splits key string and convert to account type returning th e0 indexed
+	// splits key string and convert to accountID type returning th 0 indexed
 	return database.AccountID(strings.Split(key, ":")[0])
 }
