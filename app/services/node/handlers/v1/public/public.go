@@ -26,6 +26,7 @@ func (h Handlers) Genesis(ctx context.Context, w http.ResponseWriter, r *http.Re
 func (h *Handlers) Accounts(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// extract param from url
 	accountStr := web.Param(r, "account")
+	
 
 	// declare a map
 	var accounts map[database.AccountID]database.Account
